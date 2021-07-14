@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<launch>
+  <arg name="robot_ip" default="172.16.0.2" />
+  <arg name="load_gripper" default="true" />
+  <arg name="internal_controller" default="cartesian_impedance" />
+
+  <rosparam param="franka_control/internal_controller">$(arg internal_controller)</rosparam>
+
+  <include file="$(find armer_panda)/launch/franka_control.launch.xml">
+    <arg name="robot_ip" value="$(arg robot_ip)" />
+    <arg name="load_gripper" value="$(arg load_gripper)" />
+    <arg name="internal_controller" value="$(arg internal_controller)" />
+  </include>
+
+  <rosparam command="load" file="$(find franka_control)/config/default_controllers.yaml" />
+  <rosparam command="load" file="$(find armer_panda)/config/panda_controllers.yaml" />
+
+   <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="joint_group_velocity_controller"/>
+</launch>
