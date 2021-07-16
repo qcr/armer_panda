@@ -13,7 +13,7 @@ It interfaces with the [Franka drivers](https://github.com/frankaemika/franka_ro
 sudo apt install ros-noetic-franka-ros
 ```
 
-### Armer UR installation
+### Armer Panda installation
 1. Clone this repository into the armer_ws/src folder.
 
 ```
