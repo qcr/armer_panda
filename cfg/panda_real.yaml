@@ -2,6 +2,7 @@ robots:
   - name: arm # default is panda model roboticstoolbox.models.Panda
     model: roboticstoolbox.models.Panda
     type: armer_panda.robots.PandaROSRobot
+    joint_state_topic: /franka_state_controller/joint_states
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
 backend: 
   type: armer.backends.ROS.ROS

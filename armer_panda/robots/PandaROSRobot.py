@@ -27,17 +27,21 @@ class PandaROSRobot(ROSRobot):
     def __init__(self,
                  robot: rtb.robot.Robot,
                  controller_name: str = None,
-                 *args, 
+                 recover_on_estop: bool = True,
+                 *args,
                  **kwargs):
 
         super().__init__(robot, *args, **kwargs)
         self.controller_name = controller_name \
             if controller_name else self.joint_velocity_topic.split('/')[1]
 
+        self.recover_on_estop = recover_on_estop
+        self.last_estop_state = 0
+
         # Controller switcher needed to temporarily disable controller while setting impedance
         rospy.wait_for_service('/controller_manager/switch_controller')
         self.switcher_srv = rospy.ServiceProxy('/controller_manager/switch_controller', SwitchController)
-    
+
         # Franka state subscriber
         self.franka_state_subscriber = rospy.Subscriber(
             '/franka_state_controller/franka_states',
@@ -49,8 +53,6 @@ class PandaROSRobot(ROSRobot):
 
         # Error recovery action server
         self.reset_client = actionlib.SimpleActionClient('/franka_control/error_recovery', ErrorRecoveryAction)
-
-        
 
     def recover_cb(self, req: EmptyRequest) -> EmptyResponse: # pylint: disable=no-self-use
         """[summary]
@@ -140,6 +142,16 @@ class PandaROSRobot(ROSRobot):
 
                     else:
                         state.errors |= ManipulatorState.OTHER
+
+        if self.franka_state and self.franka_state.robot_mode == FrankaState.ROBOT_MODE_IDLE:
+            if self.recover_on_estop and self.last_estop_state == 1:
+                self.recover_cb(EmptyRequest())
+        else:
+            if state.errors & ManipulatorState.OTHER == ManipulatorState.OTHER:
+                self.recover_cb(EmptyRequest())
+
+        self.last_estop_state = 1 if self.franka_state and \
+            self.franka_state.robot_mode == FrankaState.ROBOT_MODE_USER_STOPPED else 0
 
         return state
 
