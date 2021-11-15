@@ -38,6 +38,8 @@ class PandaROSRobot(ROSRobot):
         self.recover_on_estop = recover_on_estop
         self.last_estop_state = 0
 
+        self.qr = [0.01785449910869703, -0.782578660063219, -0.010252165552294044, -2.356678446585672, -0.009573905508763608, 1.5746592243451132, 0.7909650121199191]
+
         # Controller switcher needed to temporarily disable controller while setting impedance
         rospy.wait_for_service('/controller_manager/switch_controller')
         self.switcher_srv = rospy.ServiceProxy('/controller_manager/switch_controller', SwitchController)
@@ -64,7 +66,9 @@ class PandaROSRobot(ROSRobot):
         :return: an empty response
         :rtype: EmptyResponse
         """
-        self.reset_client.send_goal_and_wait(ErrorRecoveryGoal())
+        print('Recovering')
+        self.reset_client.send_goal(ErrorRecoveryGoal())
+        self.reset_client.wait_for_result()
         return EmptyResponse()
 
     def set_cartesian_impedance_cb(  # pylint: disable=no-self-use
@@ -140,7 +144,7 @@ class PandaROSRobot(ROSRobot):
                             'tau_j_range_violation']:
                         state.errors |= ManipulatorState.TORQUE_LIMIT_VIOLATION
 
-                    else:
+                    elif state.errors == 0:
                         state.errors |= ManipulatorState.OTHER
 
         if self.franka_state and self.franka_state.robot_mode == FrankaState.ROBOT_MODE_IDLE:
@@ -148,6 +152,7 @@ class PandaROSRobot(ROSRobot):
                 self.recover_cb(EmptyRequest())
         else:
             if state.errors & ManipulatorState.OTHER == ManipulatorState.OTHER:
+                print('Boo')
                 self.recover_cb(EmptyRequest())
 
         self.last_estop_state = 1 if self.franka_state and \

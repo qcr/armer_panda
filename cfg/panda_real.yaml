@@ -3,6 +3,7 @@ robots:
     model: roboticstoolbox.models.Panda
     type: armer_panda.robots.PandaROSRobot
     joint_state_topic: /franka_state_controller/joint_states
+    joint_velocity_topic:  /joint_group_velocity_controller/command # default
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
 backend: 
   type: armer.backends.ROS.ROS
