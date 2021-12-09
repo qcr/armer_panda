@@ -52,6 +52,8 @@
   <depend>franka_hw</depend>
   <depend>franka_msgs</depend>
   <depend>franka_control</depend>
+  <depend>ros_control</depend>
+  <depend>velocity_controllers</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>

@@ -50,6 +50,9 @@
     <include file="$(find armer)/launch/armer.launch">
         <arg name="config" value="$(arg config)" />
     </include>
+
+    <node name="set_defaults" pkg="armer_panda" type="set_defaults" />
+
   </group>
 
   <!-- Simulated Robot -->

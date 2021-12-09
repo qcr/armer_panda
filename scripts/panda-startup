@@ -1,0 +1,117 @@
+#!/usr/bin/env python3
+import requests
+import threading
+import signal
+import sys
+
+import systemd.daemon
+
+import urllib3
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+event = threading.Event()
+
+signal.signal(signal.SIGINT, lambda *args: event.set())
+signal.signal(signal.SIGTERM, lambda *args: event.set())
+
+class PandaConnector:
+  def __init__(self, robot_ip, username, password):
+    self.robot_ip = robot_ip
+    self.username = username
+    self.password = password
+
+    self.session = None
+    self.connected = False
+
+  def connect(self, retries=20):
+    self.session = requests.Session()
+    
+    while not self.connected and retries > 0:
+      try:
+        resp = self.session.post('https://{}/admin/api/login'.format(self.robot_ip), json={'login': self.username, 'password': self.password}, verify=False, timeout=5)
+        
+        if resp.status_code == 200:
+          self.session.cookies['authorization'] = resp.text
+          self.connected = True
+        else:
+          retries = retries - 1
+
+      except:
+        retries = retries - 1
+
+    return retries > 0
+
+  def open_breaks(self, retries=5):
+    return self.__call('https://{}/desk/api/robot/open-brakes'.format(self.robot_ip))
+
+  def close_breaks(self):
+    return self.__call('https://{}/desk/api/robot/close-brakes'.format(self.robot_ip))
+
+  def home_gripper(self):
+    return self.__call('https://{}/desk/api/gripper/homing'.format(self.robot_ip))
+
+  def __call(self, endpoint, retries=5):
+    success = False
+
+    while not success and retries > 0:
+      try:
+        resp = self.session.post(endpoint, verify=False, timeout=10)
+
+        if resp.status_code == 200:
+          success = True
+        else:
+          retries = retries - 1
+
+      except:
+        retries = retries - 1
+
+    return retries > 0
+
+
+
+def main():
+  robot_ip = '172.16.0.2'
+  command = None
+
+  if len(sys.argv) > 1:
+    robot_ip = sys.argv[1]
+
+  if len(sys.argv) > 2 and sys.argv[2] in ['--startup', '--shutdown']:
+    command = sys.argv[2]
+    
+  
+  panda = PandaConnector(
+    robot_ip,
+    username='franka',
+    password='MjMsMTY0LDIzMSwxNjIsMTM4LDEyMCwxOTQsNTUsMTk2LDI5LDE5Myw5MCwxNzAsMTgsODIsMTEyLDE5NCw3MywxNjMsMTA0LDEsNTksMjAxLDk1LDI0OCwyMjAsMTcsMTgyLDQxLDI0MywzOSwxMTc='
+  )
+
+  if not panda.connect():
+    print('Unable to connect to panda on address: {}'.format(robot_ip), file=sys.stderr)
+    sys.exit(1)
+
+  if command == '--startup':
+    panda.open_breaks()
+    panda.home_gripper()
+    print('startup complete')
+
+    systemd.daemon.notify('READY=1')
+
+  elif command == '--shutdown':
+    panda.close_breaks()
+    print('shutdown complete')
+
+  else:
+    panda.open_breaks()
+    panda.home_gripper()
+
+    systemd.daemon.notify('READY=1')
+    
+    event.wait()
+
+    panda.close_breaks()
+    print('Done')
+
+if __name__ == '__main__':
+    main()

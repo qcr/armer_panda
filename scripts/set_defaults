@@ -1,0 +1,23 @@
+#!/usr/bin/env python3
+
+import rospy
+from franka_msgs.srv import SetFullCollisionBehavior, SetFullCollisionBehaviorRequest
+
+rospy.init_node('test')
+
+proxy = rospy.ServiceProxy('/franka_control/set_full_collision_behavior', SetFullCollisionBehavior)
+proxy.wait_for_service()
+
+req = SetFullCollisionBehaviorRequest(
+    lower_torque_thresholds_acceleration=[20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0],
+    upper_torque_thresholds_acceleration=[20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0],
+    lower_torque_thresholds_nominal=[20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0],
+    upper_torque_thresholds_nominal=[20.0, 20.0, 18.0, 18.0, 16.0, 14.0, 12.0],
+    lower_force_thresholds_acceleration=[10.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+    upper_force_thresholds_acceleration=[20.0, 20.0, 20.0, 25.0, 25.0, 25.0],
+    lower_force_thresholds_nominal=[10.0, 10.0, 10.0, 10.0, 10.0, 10.0],
+    upper_force_thresholds_nominal=[20.0, 20.0, 20.0, 25.0, 25.0, 25.0]
+)
+
+resp = proxy(req)
+print(resp)
