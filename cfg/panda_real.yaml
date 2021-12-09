@@ -5,6 +5,9 @@ robots:
     joint_state_topic: /franka_state_controller/joint_states
     joint_velocity_topic:  /joint_group_velocity_controller/command # default
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
+    Kp: 0.05
+    Ki: 0.2
+    Kd: 0.00000
 backend: 
   type: armer.backends.ROS.ROS
 logging: 
