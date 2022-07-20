@@ -120,9 +120,13 @@ class PandaConnector:
     res, resp = self.__call('https://{}/admin/api/control-token'.format(self.robot_ip), reqtype='GET')
     if not res:
       return False
-    # if it's ours, we have control
-    active_token = json.loads(resp.text)['activeToken']['id']
-    return active_token == self.control_token_id
+    # if no-one has control, activeToken is null
+    active_token = json.loads(resp.text)['activeToken']
+    if active_token is None:
+      return False
+    
+    # otherwise, if activeToken id is ours, we have control
+    return active_token['id'] == self.control_token_id
 
   def release_control_token(self):
     """Releases control token, regardless of if ours is active"""
