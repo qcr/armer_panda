@@ -3,8 +3,12 @@ import requests
 import threading
 import signal
 import sys
-
+import json
+import time
+import os
+import tempfile
 import systemd.daemon
+from packaging import version
 
 import urllib3
 
@@ -19,54 +23,151 @@ class PandaConnector:
   def __init__(self, robot_ip, username, password):
     self.robot_ip = robot_ip
     self.username = username
+    # 'password' here is actually the hash generated for the login request to the desk webpage. To find this:
+    # 1. Go to the franka Desk login page on chrome/firefox (logout if you're logged in) and hit f12 to open console. 
+    # 2. Go to the network tab and turn on 'persist-log'
+    # 3. Log in to Desk with the username you want to use here
+    # 4. Under logs, there should be a POST request to https://<ip>/admin/api/login, in the payload of that request will
+    #    be the username and password hash to use here.
     self.password = password
 
     self.session = None
     self.connected = False
 
+    # system version string
+    self.version = None
+
+    # control token information for single-point-of-control (spoc, v4.2.0 and up)
+    self.control_token_req = False
+    self.control_token = None
+    self.control_token_id = None
+
   def connect(self, retries=20):
+    """ Establish a tcp session and attempt to connect to the platform (and get system version for spoc compatibility)
+    """
     self.session = requests.Session()
+
+    # login using proviced credentials
+    res, resp = self.__call('https://{}/admin/api/login'.format(self.robot_ip), json={'login': self.username, 'password': self.password}, retries=retries)
+    if res:
+      # add authorisation cookie to session
+      self.session.cookies['authorization'] = resp.text
+      self.connected = True
+      # read system version
+      return self.read_system_version()
+    return False
+
+  def read_system_version(self):
+    """ Get the system version of the franka, this lets us determine if we need to use the spoc functionality"""
+    res, resp = self.__call('https://{}/admin/api/system-version'.format(self.robot_ip), reqtype='GET')
+    if res:
+      # parse system version string, if version >= 4.2.0, then we need to use spoc
+      self.version = resp.text.strip('\"').split('\\n')[0]
+      if version.parse(self.version) >= version.parse("4.2.0"):
+        self.control_token_req = True
+      return True
+    return False
+
+  def acquire_control_token(self, force=True):
+    """ Acquire control authority for single-point-of-control. In order to open the brakes and activate fci, we need to
+    hold the active control token for the franka (and add it to the header of our api calls), this can optionally be 
+    forcibly acquired by making the appropriate request and then pressing the frontmost button on the end panda link 
+    (see docs)"""
+    if force:
+      # get length of timeout for forcing control override
+      res, resp = self.__call('https://{}/admin/api/safety'.format(self.robot_ip), reqtype='GET')
+      if not res:
+          return False
+      timeout = json.loads(resp.text)['tokenForceTimeout']
+
+      # make forced request
+      res, resp = self.__call('https://{}/admin/api/control-token/request?force'.format(self.robot_ip), json={'requestedBy': self.username})
+      if not res:
+        return False
+      
+      # forced request returns a control token, however, it is not necessarily active yet
+      self.control_token = json.loads(resp.text)['token']
+      self.control_token_id = json.loads(resp.text)['id']
+      self.session.headers.update({'X-Control-Token': self.control_token})
+      
+      # loop and wait to see if we get control, if no other user has control, this will succeed immediately. If another
+      # user does have authority, this will wait the full timeout period to see if we get control, this will either be
+      # from the other user releasing control, or the operator pushing the physical button on the arm
+      control_acquired = False
+      start = time.time()
+      while time.time() < start + timeout:
+        if self.is_control_token_active():
+          control_acquired = True
+          break
+      return control_acquired
+
+    else:
+      # not forcing, make a standard control request and then see if we acquired it successfully
+      res, resp = self.__call('https://{}/admin/api/control-token/request'.format(self.robot_ip), json={'requestedBy': self.username})
+      if not res:
+        return False
+      
+      # system always returns a control token, but ours might not be active yet
+      self.control_token = json.loads(resp.text)['token']
+      self.control_token_id = json.loads(resp.text)['id']
+      self.session.headers.update({'X-Control-Token': self.control_token})
+      
+      return self.is_control_token_active()
+      
+  def is_control_token_active(self):
+    """Determines if control token we have is active"""
+    # get active control token
+    res, resp = self.__call('https://{}/admin/api/control-token'.format(self.robot_ip), reqtype='GET')
+    if not res:
+      return False
+    # if no-one has control, activeToken is null
+    active_token = json.loads(resp.text)['activeToken']
+    if active_token is None:
+      return False
     
-    while not self.connected and retries > 0:
-      try:
-        resp = self.session.post('https://{}/admin/api/login'.format(self.robot_ip), json={'login': self.username, 'password': self.password}, verify=False, timeout=5)
-        
-        if resp.status_code == 200:
-          self.session.cookies['authorization'] = resp.text
-          self.connected = True
-        else:
-          retries = retries - 1
+    # otherwise, if activeToken id is ours, we have control
+    return active_token['id'] == self.control_token_id
 
-      except:
-        retries = retries - 1
+  def release_control_token(self):
+    """Releases control token, regardless of if ours is active"""
+    if self.__call('https://{}/admin/api/control-token'.format(self.robot_ip), reqtype='DELETE', json={'token': self.control_token})[0]:
+      self.control_token == None
+      return True
+    return False
+  
+  def enable_fci(self):
+    """Enables the Franka Control Interface feature"""
+    return self.__call('https://{}/admin/api/control-token/fci'.format(self.robot_ip), json={'token': self.control_token})[0]
 
-    return retries > 0
+  def disable_fci(self):
+    """Disables the Franka Control Interface"""
+    return self.__call('https://{}/admin/api/control-token/fci'.format(self.robot_ip), reqtype='DELETE', json={'token': self.control_token})[0]
 
   def open_breaks(self, retries=5):
-    return self.__call('https://{}/desk/api/robot/open-brakes'.format(self.robot_ip))
+    """Open the physcial brakes on the arm (takes ~10s)"""
+    return self.__call('https://{}/desk/api/robot/open-brakes'.format(self.robot_ip))[0]
 
   def close_breaks(self):
-    return self.__call('https://{}/desk/api/robot/close-brakes'.format(self.robot_ip))
+    """Close the physcial brakes on the arm (WARNING: Avoid closing brakes while arm is moving except in emergency)"""
+    return self.__call('https://{}/desk/api/robot/close-brakes'.format(self.robot_ip))[0]
 
   def home_gripper(self):
-    return self.__call('https://{}/desk/api/gripper/homing'.format(self.robot_ip))
+    """Perform homing for the franka gripper (required on each startup prior to use)"""
+    return self.__call('https://{}/desk/api/gripper/homing'.format(self.robot_ip))[0]
 
-  def __call(self, endpoint, retries=5):
-    success = False
-
-    while not success and retries > 0:
+  def __call(self, endpoint, reqtype='POST', json=None, retries=5):
+    """Make an api call to the Franka Panda web server, optionally providing data, returns tuple of call success and 
+    api response"""
+    while retries > 0:
       try:
-        resp = self.session.post(endpoint, verify=False, timeout=10)
-
+        resp = self.session.request(reqtype, endpoint, json=json, verify=False, timeout=10)
         if resp.status_code == 200:
-          success = True
+          return True, resp
         else:
           retries = retries - 1
-
       except:
         retries = retries - 1
-
-    return retries > 0
+    return False, None
 
 
 
@@ -80,7 +181,6 @@ def main():
   if len(sys.argv) > 2 and sys.argv[2] in ['--startup', '--shutdown']:
     command = sys.argv[2]
     
-  
   panda = PandaConnector(
     robot_ip,
     username='franka',
@@ -91,26 +191,87 @@ def main():
     print('Unable to connect to panda on address: {}'.format(robot_ip), file=sys.stderr)
     sys.exit(1)
 
+  # oneshot for startup
   if command == '--startup':
+    # get control token
+    if panda.control_token_req and not panda.acquire_control_token():
+        print("Unable to get control token from panda")
+        sys.exit(2)
+
     panda.open_breaks()
     panda.home_gripper()
-    print('startup complete')
+    
+    if panda.control_token_req:
+      # enable fci
+      panda.enable_fci()
 
+      # since we are running as a oneshot and we must leave the control token active while FCI is running, we store the 
+      # control token in a tmp file so that we can retreive it and release it when running --shutdown.
+      try:
+        tmp_file = open(tempfile.gettempdir()+'/panda_token','w')
+        tmp_file.write(panda.control_token + '\n')
+        tmp_file.write(str(panda.control_token_id))
+        tmp_file.close()
+      except Exception as e:
+        print('Unable to store control token (' + str(e) + '). Shutdown will required forced control takeover')
+      else:
+        print('Control Token \'{}\' has been written to /tmp/panda_token'.format(panda.control_token))
+
+    print("Startup complete")
     systemd.daemon.notify('READY=1')
 
+  # oneshot for shutdown
   elif command == '--shutdown':
+    if panda.control_token_req:
+      # since shutdown is being run as a oneshot, we must check to see if the control token was stored on the system
+      # from a previous startup oneshot. If so, we read it in and attempt to use it. If the stored token is invalid (or
+      # we fail to read the file correctly for any reason), then we will instead attempt to acquire a new control token,
+      # which may require the user to hit the manual override.
+      try:
+        tmp_file = open('/tmp/panda_token', 'r')
+        control_strs = tmp_file.read().splitlines()
+        panda.control_token = control_strs[0]
+        panda.control_token_id = int(control_strs[1])
+        tmp_file.close()
+        # delete the temp file once we've taken control as we will release it after we are finished
+        os.remove('/tmp/panda_token')
+      except Exception as e:
+        print('Unable to get an existing control token, will attempt to forcibly acquire control')
+    
+      if not panda.is_control_token_active() and not panda.acquire_control_token():
+        print("Unable to get control token from panda")
+        sys.exit(2)
+
     panda.close_breaks()
+    
+    if panda.control_token_req:
+      panda.disable_fci()
+      panda.release_control_token()
+    
     print('shutdown complete')
 
   else:
+    if panda.control_token_req and not panda.acquire_control_token():
+        print("Unable to get control token from panda")
+        sys.exit(2)
+
     panda.open_breaks()
     panda.home_gripper()
-
-    systemd.daemon.notify('READY=1')
     
-    event.wait()
+    if panda.control_token_req:
+      panda.enable_fci()
 
+    systemd.daemon.notify('READY=1')   
+    
+    # wait for shutdown signal
+    event.wait() 
+    
     panda.close_breaks()
+
+    if panda.control_token_req:
+      panda.disable_fci()
+      panda.release_control_token()
+
     print('Done')
 
 if __name__ == '__main__':
