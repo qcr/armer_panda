@@ -27,7 +27,8 @@
     </node>
 
     <!-- Load default controllers (e.g., joint_states) -->
-    <rosparam command="load" file="$(find franka_control)/config/default_controllers.yaml" />
+    <rosparam command="load" file="$(find armer_panda)/cfg/controllers.yaml" />
+    
     <node name="state_controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="franka_state_controller"/>
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" output="screen"/>
     <node name="joint_state_publisher" type="joint_state_publisher" pkg="joint_state_publisher" output="screen">
@@ -43,7 +44,6 @@
     </node>
 
     <!-- Load and spawn joint group velocity controller -->
-    <rosparam command="load" file="$(find armer_panda)/cfg/controllers.yaml" />
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="joint_group_velocity_controller"/>
 
     <!-- Launch armer driver -->

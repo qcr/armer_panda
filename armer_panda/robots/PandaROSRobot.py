@@ -152,7 +152,6 @@ class PandaROSRobot(ROSRobot):
                 self.recover_cb(EmptyRequest())
         else:
             if state.errors & ManipulatorState.OTHER == ManipulatorState.OTHER:
-                print('Boo')
                 self.recover_cb(EmptyRequest())
 
         self.last_estop_state = 1 if self.franka_state and \
