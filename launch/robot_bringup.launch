@@ -7,8 +7,12 @@
   <arg name="sim" default="false" />
 
   <!-- Load robot description from URDF -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" />
-  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" />
+  <!-- NOTE: requires the armer_descriptions package -->
+  <include file="$(find armer_descriptions)/launch/panda_description.launch">
+  </include>
+
+  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" /> -->
+  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" /> -->
 
   <!-- Physical Robot -->
   <group unless="$(arg sim)">
