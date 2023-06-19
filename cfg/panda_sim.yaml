@@ -2,10 +2,7 @@ robots:
   - name: arm # default is panda model roboticstoolbox.models.Panda
     model: 
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
-      tool:
-        name: 'panda_EE'
-        ets: 
-          - tz: 0.107
+      gripper: 'panda_link8'
     joint_state_topic: /joint_states # default
     joint_velocity_topic:  /joint_group_velocity_controller/joint_velocity # default
     
