@@ -1,16 +1,22 @@
 robots:
   - name: arm # default is panda model roboticstoolbox.models.Panda
     model:
+      # This is an array defining the robot's home position for each joint (in radians)
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
-      gripper: ee_control_link #panda_link8
-      #tool:
-      #  name: 'panda_EE'
-      #  ets:
-      #    - tz: 0.107
+      # This is the definition of the default control end-effector link (change as needed)
+      gripper: panda_hand
+    # The inheritance class defining robot specific services/topics/actions
     type: armer_panda.robots.PandaROSRobot
+    # These two topics are input (state) and output (group velocity) topics (not needed for simulation)
     joint_state_topic: /franka_state_controller/joint_states
     joint_velocity_topic:  /joint_group_velocity_controller/command # default
+    # These are the individual joint limits (in radians)
+    qlim_max: [1.5708, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14]
+    qlim_min: [-1.5708, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14]
+    # This is a defined origin of the base link
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
+    # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
+    singularity_thresh: 0.02
 backend: 
   type: armer.backends.ROS.ROS
 logging: 

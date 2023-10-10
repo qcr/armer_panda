@@ -1,12 +1,17 @@
 robots:
   - name: arm # default is panda model roboticstoolbox.models.Panda
     model: 
+      # This is an array defining the robot's home position for each joint (in radians)
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
-      gripper: panda_hand #ee_control_link  
+      # This is the definition of the default control end-effector link (change as needed)
+      gripper: panda_hand 
+    # These two topics are input (state) and output (group velocity) topics (not needed for simulation)
     joint_state_topic: /joint_states # default
     joint_velocity_topic:  /joint_group_velocity_controller/joint_velocity # default
-    qlim_max: [3.14, 0.7, 3.14, 0, 3.14, 3.14, 3.14]
-    qlim_min: [-0.1, -0.7, -0.1, -3.14, -3.14, -3.14, -3.14]
+    # These are the individual joint limits (in radians)
+    qlim_max: [1.5708, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14]
+    qlim_min: [-1.5708, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14]
+    # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
     singularity_thresh: 0.02
 backend: 
   type: roboticstoolbox.backends.swift.Swift

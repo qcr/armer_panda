@@ -3,7 +3,7 @@
   <arg name="robot_ip" default="172.16.0.2" />
   <arg name="load_gripper" default="true" />
   <arg name="internal_controller" default="cartesian_impedance" />
-
+  <arg name="config_path" default="$(find armer_panda)/cfg" doc="The path to the armer_panda config" />
   <arg name="sim" default="false" />
 
   <!-- Load robot description from URDF -->
@@ -16,7 +16,8 @@
 
   <!-- Physical Robot -->
   <group unless="$(arg sim)">
-    <arg name="config" default="$(find armer_panda)/cfg/panda_real.yaml" />
+    <arg name="config" default="$(arg config_path)/panda_real.yaml" />
+    <!-- <arg name="config" default="$(find armer_panda)/cfg/panda_real.yaml" /> -->
 
     <!-- Load gripper controllers -->
     <include file="$(find franka_gripper)/launch/franka_gripper.launch" if="$(arg load_gripper)">
@@ -61,7 +62,8 @@
 
   <!-- Simulated Robot -->
   <group if="$(arg sim)">
-    <arg name="config" default="$(find armer_panda)/cfg/panda_sim.yaml" />
+    <arg name="config" default="$(arg config_path)/panda_sim.yaml" />
+    <!-- <arg name="config" default="$(find armer_panda)/cfg/panda_sim.yaml" /> -->
 
     <include file="$(find armer)/launch/armer.launch">
         <arg name="config" value="$(arg config)" />
