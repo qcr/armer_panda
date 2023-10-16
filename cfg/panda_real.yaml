@@ -11,12 +11,14 @@ robots:
     joint_state_topic: /franka_state_controller/joint_states
     joint_velocity_topic:  /joint_group_velocity_controller/command # default
     # These are the individual joint limits (in radians)
-    qlim_max: [1.5708, 3.14, 3.14, 3.14, 3.14, 3.14, 3.14]
-    qlim_min: [-1.5708, -3.14, -3.14, -3.14, -3.14, -3.14, -3.14]
+    qlim_max: [2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]
+    qlim_min: [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
     # This is a defined origin of the base link
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
     # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
     singularity_thresh: 0.02
+    # This is the path to where the named poses file:
+    config_path: /home/qcr/.ros/configs/system_named_poses.yaml
 backend: 
   type: armer.backends.ROS.ROS
 logging: 
