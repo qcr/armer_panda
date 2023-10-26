@@ -54,6 +54,10 @@
   <depend>franka_control</depend>
   <depend>ros_control</depend>
   <depend>velocity_controllers</depend>
+  <!-- Added armer related dependencies -->
+  <depend>armer</depend>
+  <depend>armer_msgs</depend>
+  <depend>armer_descriptions</depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
