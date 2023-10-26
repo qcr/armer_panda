@@ -1,5 +1,6 @@
 robots:
-  - name: arm # default is panda model roboticstoolbox.models.Panda
+  # This is the default namespace of all ARMer topics (update as needed)
+  - name: arm 
     model: 
       # This is an array defining the robot's home position for each joint (in radians)
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
@@ -14,11 +15,14 @@ robots:
     # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
     singularity_thresh: 0.02
     # This is the path to where the named poses file:
+    # NOTE: please update user name or path if different
     config_path: /home/qcr/.ros/configs/system_named_poses.yaml
+# Actual backend for arm control (Swift for simulation)
 backend: 
   type: roboticstoolbox.backends.swift.Swift
-#readonly_backends:
+# readonly_backends:
 #  - type: roboticstoolbox.backends.PyPlot.PyPlot
+# Publish the transform from ARMer (if not provided in real robot or for simulation)
 publish_transforms: true
 logging: 
   frequency: false

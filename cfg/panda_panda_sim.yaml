@@ -1,0 +1,18 @@
+robots:
+  - name: panda1 
+    model: 
+      qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
+      gripper: panda_hand
+    singularity_thresh: 0.02
+    origin: [0, 0, 0, 0, 0, 0]
+  - name: panda2
+    model:
+      qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
+      gripper: panda_hand 
+    singularity_thresh: 0.02
+    origin: [-0.85, 0, 0, 0, 0, 0]
+backend: 
+  type: roboticstoolbox.backends.swift.Swift
+publish_transforms: true
+logging: 
+  frequency: false

@@ -1,16 +1,16 @@
 robots:
-  - name: arm # default is panda model roboticstoolbox.models.Panda
+  - name: arm # default namespace for rostopics (i.e., /arm/<topic name>) 
     model:
       # This is an array defining the robot's home position for each joint (in radians)
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
       # This is the definition of the default control end-effector link (change as needed)
       gripper: panda_hand
-    # The inheritance class defining robot specific services/topics/actions
+    # The inheritance class defining robot specific services/topics/actions (not needed for simulation)
     type: armer_panda.robots.PandaROSRobot
     # These two topics are input (state) and output (group velocity) topics (not needed for simulation)
     joint_state_topic: /franka_state_controller/joint_states
     joint_velocity_topic:  /joint_group_velocity_controller/command # default
-    # These are the individual joint limits (in radians)
+    # These are the individual joint limits (in radians) for the max and min, respectively
     qlim_max: [2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]
     qlim_min: [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
     # This is a defined origin of the base link
@@ -19,7 +19,11 @@ robots:
     singularity_thresh: 0.02
     # This is the path to where the named poses file:
     config_path: /home/qcr/.ros/configs/system_named_poses.yaml
+# Actual backend for arm control (Swift for simulation)  
 backend: 
   type: armer.backends.ROS.ROS
+#   type: roboticstoolbox.backends.swift.Swift
+# Publish the transform from ARMer (if not provided in real robot or for simulation)
+publish_transforms: false
 logging: 
   frequency: false
