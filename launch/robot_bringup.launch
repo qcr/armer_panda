@@ -9,7 +9,7 @@
 
   <!-- Handle configuration input -->
   <arg name="config" default="$(arg config_path)/$(arg config_name)_sim.yaml" if="$(arg sim)"/>
-  <arg name="config" default="$(arg config_path)/$(arg_config_name)_real.yaml" unless="$(arg sim)"/>
+  <arg name="config" default="$(arg config_path)/$(arg config_name)_real.yaml" unless="$(arg sim)"/>
 
   <!-- Additional arguments for definiing the robot's custom description -->
   <arg name="description_root" default="example" />

@@ -22,7 +22,6 @@ robots:
 # Actual backend for arm control (Swift for simulation)  
 backend: 
   type: armer.backends.ROS.ROS
-#   type: roboticstoolbox.backends.swift.Swift
 # Publish the transform from ARMer (if not provided in real robot or for simulation)
 publish_transforms: false
 logging: 
