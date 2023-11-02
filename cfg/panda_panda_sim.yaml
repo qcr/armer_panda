@@ -3,12 +3,20 @@ robots:
     model: 
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
       gripper: panda_hand
+      # NOTE: this defines the link to stop collision checking on
+      # NOTE: this defaults to the robot's base link if not defined
+      # The closer this is to the end-effector (set in gripper) the faster the checking will perform
+      collision_stop_link: panda_link8
     singularity_thresh: 0.02
     origin: [0, 0, 0, 0, 0, 0]
   - name: panda2
     model:
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
       gripper: panda_hand 
+      # NOTE: this defines the link to stop collision checking on
+      # NOTE: this defaults to the robot's base link if not defined
+      # The closer this is to the end-effector (set in gripper) the faster the checking will perform
+      collision_stop_link: panda_link8
     singularity_thresh: 0.02
     origin: [-0.85, 0, 0, 0, 0, 0]
 backend: 
