@@ -1,6 +1,6 @@
 # Armer Panda
 [![QUT Centre for Robotics Open Source](https://github.com/qcr/qcr.github.io/raw/master/misc/badge.svg)](https://qcr.github.io)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License](https://img.shields.io/github/license/qcr/armer)](./LICENSE.txt)
 [![Build Status](https://github.com/qcr/armer/workflows/Build/badge.svg?branch=master)](https://github.com/qcr/armer/actions?query=workflow%3ABuild)
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/qcr/armer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/qcr/armer/context:python)
 [![Coverage](https://codecov.io/gh/qcr/armer/branch/master/graph/badge.svg)](https://codecov.io/gh/qcr/armer)
