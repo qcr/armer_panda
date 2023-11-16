@@ -5,10 +5,13 @@ robots:
       qr: [0, -0.3, 0, -2.2, 0, 2.0, 0.78539816339]
       # This is the definition of the default control end-effector link (change as needed)
       gripper: panda_hand
-      # NOTE: this defines the link to stop collision checking on
-      # NOTE: this defaults to the robot's base link if not defined
+      # NOTE: this defines the start and stop links for definig link collision checking window
+      # NOTE: this assumes the sorted links are in order (start is top of tree to stop at base)
+      # NOTE: start defaults to the robot's gripper if not defined
+      # NOTE: stop defaults to the robot's base link if not defined
       # The closer this is to the end-effector (set in gripper) the faster the checking will perform
-      collision_stop_link: panda_link8
+      collision_check_start_link: panda_hand
+      collision_check_stop_link: panda_link8
     # The inheritance class defining robot specific services/topics/actions (not needed for simulation)
     type: armer_panda.robots.PandaROSRobot
     # These two topics are input (state) and output (group velocity) topics (not needed for simulation)
