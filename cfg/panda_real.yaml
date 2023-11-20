@@ -20,6 +20,8 @@ robots:
     # These are the individual joint limits (in radians) for the max and min, respectively
     qlim_max: [2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]
     qlim_min: [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
+    # These are individual joint speed (in radians/sec) limits
+    qdlim: [2.1750, 2.1750, 2.1750, 2.1750, 2.6100, 2.6100, 2.6100]
     # This is a defined origin of the base link
     origin: [0, 0, 0, 0, 0, 0] #default (xyzrpy)
     # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
