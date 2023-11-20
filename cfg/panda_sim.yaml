@@ -19,6 +19,8 @@ robots:
     # These are the individual joint limits (in radians)
     qlim_max: [2.8973, 1.7628, 2.8973, -0.0698, 2.8973, 3.7525, 2.8973]
     qlim_min: [-2.8973, -1.7628, -2.8973, -3.0718, -2.8973, -0.0175, -2.8973]
+    # These are individual joint speed (in radians/sec) limits
+    qdlim: [2.1750, 2.1750, 2.1750, 2.1750, 2.6100, 2.6100, 2.6100]
     # This is a singularity threshold to preempt motion (where the singularity value approaches 0)
     singularity_thresh: 0.02
     # This is the path to where the named poses file:

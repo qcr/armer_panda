@@ -25,6 +25,9 @@
     <arg name="xacro_name" value="$(arg xacro_name)" />
   </include>
 
+  <!-- NEW Version -->
+  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda.urdf.xacro' hand:=$(arg load_gripper)" /> -->
+  <!-- OLD (franka_ros <= 0.7.1 ) -->
   <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" /> -->
   <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" /> -->
 
