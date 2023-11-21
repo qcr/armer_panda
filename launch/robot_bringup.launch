@@ -67,7 +67,7 @@
 
     <!-- Load and spawn joint group velocity controller -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen"  args="joint_group_velocity_controller"/>
-
+    <node name="controller_stopped_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="--stopped position_joint_trajectory_controller --timeout 600" />
     <!-- Launch armer driver -->
     <include file="$(find armer)/launch/armer.launch">
         <arg name="config" value="$(arg config)" />
