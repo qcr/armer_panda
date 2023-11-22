@@ -12,7 +12,7 @@ robots:
       # NOTE: stop defaults to the robot's base link if not defined
       # The closer this is to the end-effector (set in gripper) the faster the checking will perform
       collision_check_start_link: panda_hand
-      collision_check_stop_link: panda_hand
+      collision_check_stop_link: panda_link7
     # These two topics are input (state) and output (group velocity) topics (not needed for simulation)
     joint_state_topic: /joint_states # default
     joint_velocity_topic:  /joint_group_velocity_controller/joint_velocity # default
