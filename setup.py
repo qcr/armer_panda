@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
 .. codeauthor:: Gavin Suddreys
+.. codeauthor:: Dasun Gunasinghe
 """
 import os
+from glob import glob
 from typing import List
 from setuptools import setup, find_packages
 
@@ -12,15 +14,9 @@ req = [
     'armer'
 ]
 
-# Get the long description from the README file
-with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
-    long_description = f.read()
-
 # list all data folders here, to ensure they get packaged
-
 data_folders = [
 ]
-
 
 def package_files(directory: List[str]) -> List[str]:
     """[summary]
@@ -43,21 +39,14 @@ for data_folder in data_folders:
 
 setup(
     name='armer_panda',
-
-    version='0.1.0',
-
+    version='0.2.0',
     description='Armer Panda - The ROS Arm drivEr for the Franka-Emika Panda',
-
-    long_description=long_description,
-
     long_description_content_type='text/markdown',
-
     url='https://github.com/qcr/armer',
-
     author='Gavin Suddrey',
-
-    license='MIT',
-
+    maintainer='Dasun Gunasinghe, Timothy Morris',
+    maintainer_email='dasun.gunasinghe@qut.edu.au, timothy.morris@qut.edu.au',
+    license='BSD3',
     classifiers=[
         #   3 - Alpha
         #   4 - Beta
@@ -76,27 +65,32 @@ setup(
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
     ],
-
     python_requires='>=3.6',
-
     project_urls={
         # 'Documentation': 'https://petercorke.github.io/roboticstoolbox-python',
         'Source': 'https://github.com/qcr/armer',
         'Tracker': 'https://github.com/qcr/armer/issues'#,
         # 'Coverage': 'https://codecov.io/gh/petercorke/roboticstoolbox-python'
     },
-
     keywords='python robotics robotics-toolbox kinematics dynamics' \
              ' motion-planning trajectory-generation jacobian hessian' \
              ' control simulation robot-manipulator mobile-robot ros',
 
     packages=find_packages(exclude=['tests']),
     package_data={'armer_panda': extra_files},
-
     include_package_data=True,
-
     install_requires=req,
-
-    extras_require={
-    }
+    extras_require={},
+    entry_points={
+        'console_scripts': [
+          'entry_point = armer_panda.entry_point:main'
+        ],
+    },
+    data_files=[
+        (os.path.join('share', 'armer_panda'), ['package.xml']),
+        (os.path.join('share', 'armer_panda'), glob('launch/*.py')),
+        (os.path.join('share', 'armer_panda', 'cfg'), glob(os.path.join('cfg', '*'))),
+        ('share/ament_index/resource_index/packages',
+            ['resource/' + 'armer_panda']),
+    ],
 )
