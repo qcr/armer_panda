@@ -6,6 +6,7 @@ PandaROSRobot provides robot-specific callbacks for recovery and setting impedan
 .. codeauthor:: Gavin Suddreys
 """
 import rospy
+import time
 import actionlib
 import roboticstoolbox as rtb
 
@@ -57,6 +58,7 @@ class PandaROSRobot(ROSRobot):
         )
         self.last_estop_state = 0
         self.franka_state = None
+        self._controller_mode = ControlMode.JOINTS
 
         # Error recovery action server
         self.reset_client = actionlib.SimpleActionClient('/franka_control/error_recovery', ErrorRecoveryAction)
@@ -72,11 +74,18 @@ class PandaROSRobot(ROSRobot):
         :rtype: EmptyResponse
         """
         print('ARMER PANDA Recovering...')
+        rospy.loginfo(f"[ARMER PANDA RECOVERY] Current state is: {self._controller_mode}")
         self.reset_client.send_goal(ErrorRecoveryGoal())
         self.reset_client.wait_for_result()
-        rospy.loginfo(f"[RECOVER CB] -> Resetting from ERROR state to JOINTS [Default]")
-        self._controller_mode = ControlMode.JOINTS
         self.preempted = False
+
+        time.sleep(2)
+        rospy.loginfo(f"[ARMER PANDA] Actioning standard recovery")
+        if self._controller_mode == ControlMode.ERROR:
+            rospy.loginfo(f"[ARMER PANDA RECOVER CB] -> Resetting from ERROR state to JOINTS [Default]")
+            self._controller_mode = ControlMode.JOINTS
+        else:
+            rospy.loginfo(f"[ARMER PANDA RECOVER CB] -> Currently not in ERROR: {self._controller_mode}")
         return EmptyResponse()
 
     def set_cartesian_impedance_cb(  # pylint: disable=no-self-use
