@@ -23,6 +23,11 @@ from armer_msgs.srv import \
 from franka_msgs.msg import ErrorRecoveryAction, ErrorRecoveryGoal
 from franka_msgs.msg import FrankaState
 
+class ControlMode:
+    ERROR=0
+    JOINTS=1
+    CARTESIAN=2
+
 class PandaROSRobot(ROSRobot):
     def __init__(self,
                  robot: rtb.robot.Robot,
@@ -66,9 +71,12 @@ class PandaROSRobot(ROSRobot):
         :return: an empty response
         :rtype: EmptyResponse
         """
-        print('Recovering')
+        print('ARMER PANDA Recovering...')
         self.reset_client.send_goal(ErrorRecoveryGoal())
         self.reset_client.wait_for_result()
+        rospy.loginfo(f"[RECOVER CB] -> Resetting from ERROR state to JOINTS [Default]")
+        self._controller_mode = ControlMode.JOINTS
+        self.preempted = False
         return EmptyResponse()
 
     def set_cartesian_impedance_cb(  # pylint: disable=no-self-use
