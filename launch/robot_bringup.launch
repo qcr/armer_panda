@@ -24,12 +24,7 @@
     <arg name="description_key" value="$(arg description_key)" />
     <arg name="xacro_name" value="$(arg xacro_name)" />
   </include>-->
-
-  <!-- NEW Version -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda/panda.urdf.xacro' hand:=$(arg load_gripper)" />
-  <!-- OLD (franka_ros <= 0.7.1 ) -->
-  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" /> -->
-  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" /> -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda/panda.urdf.xacro' hand:=$(arg load_gripper) arm_id:=panda" />
 
   <!-- Physical Robot -->
   <group unless="$(arg sim)">
@@ -39,6 +34,7 @@
     <!-- Load gripper controllers -->
     <include file="$(find franka_gripper)/launch/franka_gripper.launch" if="$(arg load_gripper)">
         <arg name="robot_ip" value="$(arg robot_ip)" />
+        <arg name="arm_id" value="panda" />
     </include>
 
     <!-- Launch franka control framework -->
