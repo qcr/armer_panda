@@ -19,14 +19,14 @@
 
   <!-- Load robot description from URDF -->
   <!-- NOTE: requires the armer_descriptions package -->
-  <include file="$(find armer_descriptions)/launch/description.launch">
+  <!--<include file="$(find armer_descriptions)/launch/description.launch">
     <arg name="description_root" value="$(arg description_root)" />
     <arg name="description_key" value="$(arg description_key)" />
     <arg name="xacro_name" value="$(arg xacro_name)" />
-  </include>
+  </include>-->
 
   <!-- NEW Version -->
-  <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda.urdf.xacro' hand:=$(arg load_gripper)" /> -->
+  <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda/panda.urdf.xacro' hand:=$(arg load_gripper)" />
   <!-- OLD (franka_ros <= 0.7.1 ) -->
   <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm_hand.urdf.xacro'" if="$(arg load_gripper)" /> -->
   <!-- <param name="robot_description" command="$(find xacro)/xacro '$(find franka_description)/robots/panda_arm.urdf.xacro'" unless="$(arg load_gripper)" /> -->
